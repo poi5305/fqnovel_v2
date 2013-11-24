@@ -194,6 +194,10 @@ class Novel extends Novel_plugin
 		{
 			return file_get_contents("$this->download/$this->record");
 		}
+		else
+		{
+			return "{}";
+		}
 	}
 	function update_global_novel_db()
 	{
