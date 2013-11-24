@@ -91,7 +91,7 @@
 			$("#bookRecord").html("上次下載記錄："+localStorage["tid_"+tid]);
 		});
 		$("#deleteBook").tap(function(){
-			$.get("include/ck101_get.php?type=delete&tid="+tid);
+			$.get("fqnovel.php?type=remove_book&page_url="+dlHref);
 			jQT.goBack();
 			readBookList();
 		});
@@ -114,12 +114,14 @@
 		else
 		{
 			$("#novelList").html("<li>讀取列表中...請稍後</li>");
+			console.log("fqnovel.php?type=get_novel_list&page="+localStorage.page);
 			$.get("fqnovel.php?type=get_novel_list&page="+localStorage.page)
 			.done(parser_novel_list);
 		}
 	}
 	function searchList(){
 		$("#novelList").html("<li>搜尋中...請稍後</li>");
+		console.log("fqnovel.php?type=search&text="+$("#search").val()+"&page="+localStorage.page);
 		$.get("fqnovel.php?type=search&text="+$("#search").val()+"&page="+localStorage.page)
 		.done(parser_novel_list);
 	}
@@ -146,7 +148,8 @@
 			dlHref = $(this).attr("id");
 			$("#noveInfoTitle").html($(this).html());
 			$("#noveInfoContext").html("讀取中...請稍後");
-			//console.log("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref);
+			
+			console.log("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref);
 			$.get("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref)
 			.done(function(data){
 				$("#noveInfoContext").html(data);
@@ -157,6 +160,7 @@
 	function readBookList(){
 		$("#bookList").html("<li>讀取列表中...請稍後</li>");
 		
+		console.log("fqnovel.php?type=get_book_list");
 		$.get("fqnovel.php?type=get_book_list")
 		.done(function(data){
 			var obj = JSON.parse(data);

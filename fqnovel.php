@@ -38,6 +38,10 @@ switch($type)
 		$page_url = $_GET["page_url"];
 		$novel->download_novel($page_url);
 		break;
+	case "remove_book"
+		$page_url = $_GET["page_url"];
+		$novel->remove_novel($page_url);
+		break;
 	case "get_book_list":
 		echo $novel->get_book_list();
 		break;
