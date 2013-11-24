@@ -142,7 +142,6 @@ class Novel extends Novel_plugin
 			$_SESSION["search_url"] = $search_url;
 		}
 		$search_url = $_SESSION["search_url"] . "&page=$page";
-		
 		//return;
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -153,7 +152,7 @@ class Novel extends Novel_plugin
 		$result = curl_exec($ch);
 		curl_close($ch);
 		//file_put_contents("tmp.html", $result);
-		$this->parser_search($result);
+		return $this->parser_search($result);
 	}
 	function parser_search($text)
 	{
@@ -165,14 +164,16 @@ class Novel extends Novel_plugin
 		foreach($list->find("li") as $li)
 		{
 			$number_info = $li->find("p.xg1",0)->plaintext;
-			list($posts, $num) = sscanf($number_info, "%d 個回覆 - %d 次查看");
+			list($posts, $nums) = sscanf($number_info, "%d 個回覆 - %d 次查看");
 			
 			$search_list[$idx] = Array(
 				"novel_id" => $li->id
+				,"page_url" => "thread-{$li->id}-1-1.html"
+				,"class" => ""
 				,"name" => $li->find("a",0)->plaintext
 				,"pages" => floor($posts/10)+1
 				,"posts" => $posts
-				,"num"	=>$num
+				,"nums"	=>$nums
 			);
 			$idx++;
 		}

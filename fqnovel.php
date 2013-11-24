@@ -12,6 +12,12 @@ switch($type)
 		$data = $novel->get_novel_list($page);
 		echo json_encode($data);
 		break;
+	case "search":
+		$page =	$_GET["page"];
+		$text = $_GET["text"];
+		$data = $novel->search($text, $page);
+		echo json_encode($data);	
+		break;
 	case "get_novel_info_content":
 		// unit_test url fqnovel.php?type=get_novel_info&length=3000&page_url=thread-2866217-1-1.html
 		$page_url = $_GET["page_url"];
@@ -62,8 +68,6 @@ switch($type)
 		
 		echo $novel_list[$novel_id]["name"] . "\n\n";
 		echo "程式作者：Andy \n";
-		
-		
 		
 		$novel->echo_novel($novel_id, $page_from, $page_end);
 		

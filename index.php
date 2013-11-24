@@ -103,56 +103,57 @@
 			}
 		});
 		
-		console.log(localStorage);
-		
 		readList();
 		readBookList();
 	});
 	function readList(){
-		$("#novelList").html("<li>讀取列表中...請稍後</li>");
-		
-		$.get("fqnovel.php?type=get_novel_list&page="+localStorage.page,function(data){
-			$("#novelList").html("");
-			var obj = JSON.parse(data);
-			//console.log(obj)
-			for(var key in obj)
-			{
-				$("#novelList").append(function(){
-					var html = "";
-					html+="<li class='arrow'>";
-					html+="<a id='"+obj[key]["page_url"]+"' href='#novelInfo' class='noveList' style='font-size:12px;'>";
-					html+=obj[key]["class"] + " [文章/人氣]"+ "[" + obj[key]["pages"] + "/" + obj[key]["nums"] + "]";
-					html+="<br>";
-					html+=obj[key]["name"];
-					html+="</a>";
-					html+="</li>";	
-					return html;
-				});
-			}
-			$(".noveList").unbind();
-			$(".noveList").bind("touchstart click",function(){
-				dlHref = $(this).attr("id");
-				$("#noveInfoTitle").html($(this).html());
-				$("#noveInfoContext").html("讀取中...請稍後");
-				//console.log("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref);
-				$.get("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref)
-				.done(function(data){
-					$("#noveInfoContext").html(data);
-				});
-			});
-		});
+		if($("#search").val() != "")
+		{
+			searchList();
+		}
+		else
+		{
+			$("#novelList").html("<li>讀取列表中...請稍後</li>");
+			$.get("fqnovel.php?type=get_novel_list&page="+localStorage.page)
+			.done(parser_novel_list);
+		}
 	}
 	function searchList(){
 		$("#novelList").html("<li>搜尋中...請稍後</li>");
-		$("#novelList").load("include/ck101_get.php?type=search&value="+$("#search").val(),function(){
-			$(".noveList").bind("touchstart",function(){
-				dlHref = $(this).attr("id");
-				$("#noveInfoTitle").html($(this).html());
-				$("#noveInfoContext").html("讀取中...請稍後");
-				$("#noveInfoContext").load("include/ck101_get.php?type=getInfo&url="+dlHref);
+		$.get("fqnovel.php?type=search&text="+$("#search").val()+"&page="+localStorage.page)
+		.done(parser_novel_list);
+	}
+	function parser_novel_list(data)
+	{
+		$("#novelList").html("");
+		var obj = JSON.parse(data);
+		for(var key in obj)
+		{
+			$("#novelList").append(function(){
+				var html = "";
+				html+="<li class='arrow'>";
+				html+="<a id='"+obj[key]["page_url"]+"' href='#novelInfo' class='noveList' style='font-size:12px;'>";
+				html+=obj[key]["class"] + " [文章/人氣]"+ "[" + obj[key]["pages"] + "/" + obj[key]["nums"] + "]";
+				html+="<br>";
+				html+=obj[key]["name"];
+				html+="</a>";
+				html+="</li>";	
+				return html;
+			});
+		}
+		$(".noveList").unbind();
+		$(".noveList").bind("touchstart click",function(){
+			dlHref = $(this).attr("id");
+			$("#noveInfoTitle").html($(this).html());
+			$("#noveInfoContext").html("讀取中...請稍後");
+			//console.log("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref);
+			$.get("fqnovel.php?type=get_novel_info_content&length=3000&page_url="+dlHref)
+			.done(function(data){
+				$("#noveInfoContext").html(data);
 			});
 		});
 	}
+	
 	function readBookList(){
 		$("#bookList").html("<li>讀取列表中...請稍後</li>");
 		
@@ -284,9 +285,9 @@
                 從<input type="tel" id="partFrom" value="1" style="width:30px;" />
                 到<input type="tel" id="partTo" value="2" style="width:30px;" />
             </li>
-        	<li><a id="partDownload" target="_blank" href="#">分段下載此小說</a></li>
+        	<!-- <li><a id="partDownload" target="_blank" href="#">分段下載此小說</a></li> -->
         	<li><a id="fullDownload" target="_blank" href="#">完整下載此小說</a></li>
-        	<li><a id="gpartDownload" target="_blank" href="#">GoodReader 分段下載</a></li>
+        	<!-- <li><a id="gpartDownload" target="_blank" href="#">GoodReader 分段下載</a></li> -->
         	<li><a id="gfullDownload" target="_blank" href="#">GoodReader 完整下載</a></li>
         </ul>
         <ul class="rounded">
