@@ -236,7 +236,6 @@
 	}
 
 </script>
-<link rel="stylesheet" type="text/css" href="css/iphone.css" media="screen" />
 </head>
 
 <body>
