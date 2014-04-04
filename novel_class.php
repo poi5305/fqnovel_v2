@@ -313,7 +313,9 @@ class Novel extends Novel_plugin
 	}
 	function get_novel_info($page_url)
 	{
-		$this->html->load_file("http://ck101.com/".$page_url);
+		if(!strstr($page_url, "http"))
+			$page_url = "http://ck101.com/" . $page_url;
+		$this->html->load_file($page_url);
 		$data = array();
 		$data["page_url"] = $page_url;
 			
