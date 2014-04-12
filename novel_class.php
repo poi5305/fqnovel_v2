@@ -284,8 +284,7 @@ class Novel extends Novel_plugin
 		
 		$pages = $this->current_novel_info["pages"];
 		for($page = 2; $page <= $pages; $page++)
-		{
-			
+		{	
 			$page_url = $this->make_page_url($novel_id, $page);
 			$this->get_novel_info($page_url);
 			$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, $page) );
@@ -294,19 +293,17 @@ class Novel extends Novel_plugin
 			$record["download_page"] = $page;
 			file_put_contents("$this->download/$novel_id/$this->record", json_encode($record));
 		}
-		
-		
-		
 	}
 	function save_content($novel_id, $page)
 	{
 		$record = Array();
 		$fp = fopen("$this->download/$novel_id/$page.txt", "a");
-		fputs($fp, "\xEF\xBB\xBF");
+		//fputs($fp, "\xEF\xBB\xBF"); //utf8 BOM, write in download fqnovel.php
 		foreach($this->current_novel_content as $post => &$content)
 		{
 			$record[$post] = strlen($content);
-			fputs($fp, $content);
+			//fputs($fp, $content);//utf16
+			fputs($fp, iconv("UTF-8", "UTF-16", $content) );//utf8
 		}
 		fclose($fp);
 		return $record;
@@ -342,13 +339,13 @@ class Novel extends Novel_plugin
 		// contents
 		$idx=1;
 		$idx = $this->parser_novel_content($idx);
-
 		
+		//echo mb_convert_encoding($this->html, "UTF-16");
 		if($novel_page_info["novel_page"] == 1)
 		{
 			//http://ck101.com/forum.php?mod=threadlazydata&tid=2866217		
-			$this->html->load_file("http://ck101.com/forum.php?mod=threadlazydata&tid=".$data["novel_id"]);
-			$idx = $this->parser_novel_content($idx);
+			//$this->html->load_file("http://ck101.com/forum.php?mod=threadlazydata&tid=".$data["novel_id"]);
+			//$idx = $this->parser_novel_content($idx);
 		}
 		
 		$this->current_novel_info = $data;

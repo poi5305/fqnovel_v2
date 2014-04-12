@@ -2,7 +2,17 @@
 include("novel_class.php");
 $novel = new Novel;
 
-$type = $_GET["type"];
+if(isset($argv[1]))
+{
+	for($i=1;$i<$argc;$i++)
+	{
+		$av = explode("=", $argv[$i]);
+		$_GET[$av[0]] = $av[1];
+	}
+}
+
+if(isset($_GET["type"]))
+	$type = $_GET["type"];
 
 switch($type)
 {
@@ -67,14 +77,22 @@ switch($type)
 		//echo "$page_from : $page_end";
 		
 		header("Content-type: text/plain");
-		header("Content-type: text/plain; charset=UTF-8");
+		header("Content-type: text/plain; charset=UTF-16");
 		header('Content-Disposition: attachment; filename*=UTF-8\'\'' . urlencode ( $novel_list[$novel_id]["name"]."txt" ) );
 		
-		echo $novel_list[$novel_id]["name"] . "\n\n";
-		echo "程式作者：Andy \n";
+		//fputs($fp, "\xEF\xBB\xBF");
+		//echo $novel_list[$novel_id]["name"] . "\n\n";
+		//echo "程式作者：Andy \n";
+		
+		fputs($fp, "\xFE\xFF");
+		echo iconv("UTF-8", "UTF-16", $novel_list[$novel_id]["name"]."\n\n");
+		echo iconv("UTF-8", "UTF-16", "程式作者：Andy \n");
 		
 		$novel->echo_novel($novel_id, $page_from, $page_end);
 		
+		break;
+	default:
+		echo "Error! no such type\n";
 		break;
 }
 
