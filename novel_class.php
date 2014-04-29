@@ -265,6 +265,7 @@ class Novel extends Novel_plugin
 	}
 	function download_novel($page_url, $is_current = false)
 	{
+		$page_url = $this->url_to_page_1($page_url);
 		
 		if(!$is_current)
 			$this->get_novel_info($page_url);
@@ -310,12 +311,12 @@ class Novel extends Novel_plugin
 	}
 	function get_novel_info($page_url)
 	{
+		$page_url = $this->url_to_page_1($page_url);
 		if(!strstr($page_url, "http"))
 			$page_url = "http://ck101.com/" . $page_url;
 		$this->html->load_file($page_url);
 		$data = array();
 		$data["page_url"] = $page_url;
-			
 		// posts pages nums
 		$info = trim($this->html->find("div#pt span",0)->plaintext);
 		
@@ -341,6 +342,8 @@ class Novel extends Novel_plugin
 		$idx = $this->parser_novel_content($idx);
 		
 		//echo mb_convert_encoding($this->html, "UTF-16");
+		//echo $novel_page_info["novel_page"]."\n";
+		
 		if($novel_page_info["novel_page"] == 1)
 		{
 			//http://ck101.com/forum.php?mod=threadlazydata&tid=2866217		
@@ -360,9 +363,9 @@ class Novel extends Novel_plugin
 		foreach($this->html->find("*[id^=normalthread]") as $tbody){
 			$idx = count($data);
 			$th = $tbody->find("th",0);
-			$class = trim($th->find("em",0)->plaintext);
-			$data[$idx]["class"] = trim($th->find("em",0)->plaintext);
-			$data[$idx]["name"] = trim($th->find("a",1)->plaintext);
+			//$data[$idx]["class"] = trim($th->find("em",0)->plaintext);
+			$data[$idx]["class"] = "";
+			$data[$idx]["name"] = trim($th->find("a",0)->plaintext);
 			$data[$idx]["page_url"]  = trim($th->find("a",1)->href);
 			$data[$idx]["posts"] = trim($tbody->find(".num a",0)->plaintext);
 			$data[$idx]["pages"] = floor($data[$idx]["posts"]/10)+1;
@@ -412,6 +415,13 @@ class Novel extends Novel_plugin
 	{
 		$url = explode("-",$page_url);
 		return Array("novel_id"=>$url[1], "novel_page"=>$url[2]);
+	}
+	function url_to_page_1($page_url)
+	{
+		$url = explode("-",$page_url);
+		$url[2] = "1";
+		$page_url = implode("-", $url);
+		return $page_url;
 	}
 };
 //$aa = new Novel;
