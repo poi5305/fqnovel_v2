@@ -355,6 +355,8 @@ class Novel extends Novel_plugin
 		return $data;
 		
 	}
+	
+	/// 從ck101取得小說列表，先下載網頁，再分析名字等等
 	function get_novel_list($page=1)
 	{
 		$url = "http://ck101.com/forum-237-$page.html";
@@ -363,9 +365,9 @@ class Novel extends Novel_plugin
 		foreach($this->html->find("*[id^=normalthread]") as $tbody){
 			$idx = count($data);
 			$th = $tbody->find("th",0);
-			//$data[$idx]["class"] = trim($th->find("em",0)->plaintext);
-			$data[$idx]["class"] = "";
-			$data[$idx]["name"] = trim($th->find("a",0)->plaintext);
+			$data[$idx]["class"] = trim($th->find("em",0)->plaintext);
+			//$data[$idx]["class"] = "";
+			$data[$idx]["name"] = trim($th->find("a",1)->plaintext);
 			$data[$idx]["page_url"]  = trim($th->find("a",1)->href);
 			$data[$idx]["posts"] = trim($tbody->find(".num a",0)->plaintext);
 			$data[$idx]["pages"] = floor($data[$idx]["posts"]/10)+1;
