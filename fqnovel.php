@@ -14,6 +14,10 @@ if(isset($argv[1]))
 if(isset($_GET["type"]))
 	$type = $_GET["type"];
 
+
+//http://ck101.com/thread-2954714-1-2.html
+//php fqnovel.php type=download_novel page_url=thread-2954714-1-2.html
+
 switch($type)
 {
 	case "get_novel_list":
@@ -45,6 +49,7 @@ switch($type)
 		echo $data["content"];
 		break;
 	case "download_novel":
+		// $page_url = thread-2954714-1-2.html
 		$page_url = $_GET["page_url"];
 		$novel->download_novel($page_url);
 		break;
@@ -53,7 +58,17 @@ switch($type)
 		$novel->remove_novel($page_url);
 		break;
 	case "get_book_list":
-		echo $novel->get_book_list();
+		//echo $novel->get_book_list();
+		// sort order
+		$sorted_array = array();
+		$array = json_decode($novel->get_book_list(), true);
+		$idx = count($array);
+		foreach($array as $content)
+		{
+			$idx--;
+			$sorted_array[$idx] = $content;
+		}
+		echo json_encode($sorted_array);
 		break;
 	case "get_novel":
 		$novel_list = json_decode($novel->get_book_list(), true);
