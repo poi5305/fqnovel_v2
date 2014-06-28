@@ -234,8 +234,10 @@ class Novel extends Novel_plugin
 	}
 	function update_novel($page_url, $is_current = false)
 	{
+		$page_url = $this->url_to_page_1($page_url);
+		
 		if(!$is_current)
-			$this->get_novel_info($page_url);
+			$this->get_novel_info($page_url, true);
 		$novel_id = $this->current_novel_info["novel_id"];
 		
 		if(!is_file("$this->download/$novel_id/$this->record"))
@@ -253,7 +255,7 @@ class Novel extends Novel_plugin
 			for($page = $novel_db["download_page"]; $page <= $pages; $page++)
 			{
 				$page_url = $this->make_page_url($novel_id, $page);
-				$this->get_novel_info($page_url);
+				$this->get_novel_info($page_url, false);
 				$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, $page) );
 				$this->current_novel_info["download_page"] = $page;
 				$this->update_global_novel_db();
@@ -279,15 +281,18 @@ class Novel extends Novel_plugin
 		}
 		mkdir("$this->download/$novel_id", 0777);
 		
+		// page = 1
 		$record = $this->current_novel_info;
 		$record["contents"] = Array();
 		$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, 1) );
+		
 		
 		$pages = $this->current_novel_info["pages"];
 		for($page = 2; $page <= $pages; $page++)
 		{	
 			$page_url = $this->make_page_url($novel_id, $page);
-			$this->get_novel_info($page_url);
+			$this->get_novel_info($page_url, false);
+			
 			$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, $page) );
 			$this->current_novel_info["download_page"] = $page;
 			$this->update_global_novel_db();
@@ -306,14 +311,17 @@ class Novel extends Novel_plugin
 			//fputs($fp, $content);//utf16
 			fputs($fp, iconv("UTF-8", "UTF-16", $content) );//utf8
 		}
+		$this->current_novel_content = array();
 		fclose($fp);
 		return $record;
 	}
-	function get_novel_info($page_url)
+	function get_novel_info($page_url, $to_page_1=true)
 	{
-		$page_url = $this->url_to_page_1($page_url);
+		//if($to_page_1)
+		//	$page_url = $this->url_to_page_1($page_url);
 		if(!strstr($page_url, "http"))
 			$page_url = "http://ck101.com/" . $page_url;
+		
 		$this->html->load_file($page_url);
 		$data = array();
 		$data["page_url"] = $page_url;
