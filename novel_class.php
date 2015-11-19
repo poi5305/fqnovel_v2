@@ -282,6 +282,10 @@ class Novel extends Novel_plugin
 		$novel_db = json_decode(file_get_contents("$this->download/$novel_id/$this->record"), true);
 		$record = array_merge($novel_db, $this->current_novel_info);
 		
+		$posts = $this->current_novel_info["posts"];
+		$pages = $this->current_novel_info["pages"];
+		$nums = $this->current_novel_info["nums"];
+
 		if($this->current_novel_info["posts"] != $novel_db["posts"] || $novel_db["download_page"] != $novel_db["pages"])
 		{
 			$pages = $this->current_novel_info["pages"];
@@ -289,6 +293,9 @@ class Novel extends Novel_plugin
 			{
 				$page_url = $this->make_page_url($novel_id, $page);
 				$this->get_novel_info($page_url, false);
+				$this->current_novel_info["posts"] = $posts;
+				$this->current_novel_info["pages"] = $pages;
+				$this->current_novel_info["nums"] = $nums;
 				$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, $page) );
 				$this->current_novel_info["download_page"] = $page;
 				$this->update_global_novel_db();
