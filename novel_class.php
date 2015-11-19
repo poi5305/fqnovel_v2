@@ -6,7 +6,40 @@ define("FILE_PUT_CONTENTS_ATOMIC_MODE", 0777);
 
 class Novel_plugin
 {
-	
+
+	// get id, title, class, url, pages, replay, look from forum
+	function ck101_parse_forum($html) {
+		$data = array();
+		foreach($this->html->find("*[id^=normalthread]") as $tbody){
+			$idx = count($data);
+			$th = $tbody->find("th",0);
+			$data[$idx]["class"] = trim($th->find("em",0)->plaintext);
+			$data[$idx]["name"] = trim($th->find("a",1)->plaintext);
+			$data[$idx]["page_url"]  = trim($th->find("a",1)->href);
+
+			$data[$idx]["posts"] = $this->stringToInt(trim($tbody->find(".num a",0)->plaintext));
+			$data[$idx]["pages"] = floor($data[$idx]["posts"]/10)+1;
+			$data[$idx]["nums"]  = trim(explode("/", $tbody->find(".num",0)->plaintext)[1]);
+			
+			$novel_page_info = $this->page_url_to_info($data[$idx]["page_url"]);
+			$data[$idx]["novel_id"] = $novel_page_info["novel_id"];
+			
+			if(strstr($data[$idx]["name"],"已完"))	$data[$idx]["type"] =1;
+			else	$data[$idx]["type"] =0;
+			if($data[$idx]["class"] == "[版務公告]")
+				array_pop($data);
+		}
+		$this->current_novel_list = $data;
+		return $data;
+	}
+
+	function stringToInt($s) {
+		$s = str_replace("k", "00", $s);
+		$s = str_replace("m", "00000", $s);
+		$s = str_replace(".", "", $s);
+		return +$s;
+	}
+
 };
 class Novel extends Novel_plugin
 {
@@ -286,15 +319,19 @@ class Novel extends Novel_plugin
 		$record["contents"] = Array();
 		$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, 1) );
 		
-		
+		$posts = $this->current_novel_info["posts"];
 		$pages = $this->current_novel_info["pages"];
+		$nums = $this->current_novel_info["nums"];
 		for($page = 2; $page <= $pages; $page++)
 		{	
 			$page_url = $this->make_page_url($novel_id, $page);
 			$this->get_novel_info($page_url, false);
-			
+			$this->current_novel_info["posts"] = $posts;
+			$this->current_novel_info["pages"] = $pages;
+			$this->current_novel_info["nums"] = $nums;
 			$record["contents"] = array_merge($record["contents"], $this->save_content($novel_id, $page) );
 			$this->current_novel_info["download_page"] = $page;
+			//print_r($this->current_novel_info);
 			$this->update_global_novel_db();
 			$record["download_page"] = $page;
 			file_put_contents("$this->download/$novel_id/$this->record", json_encode($record));
@@ -321,18 +358,18 @@ class Novel extends Novel_plugin
 		//	$page_url = $this->url_to_page_1($page_url);
 		if(!strstr($page_url, "http"))
 			$page_url = "http://ck101.com/" . $page_url;
-		
+
 		$this->html->load_file($page_url);
 		$data = array();
 		$data["page_url"] = $page_url;
 		// posts pages nums
-		$info = trim($this->html->find("div#pt span",0)->plaintext);
-		
+		$info = $this->html->find("div.authMsg",0);
+		//echo $info;
 		//[&nbsp;查看:1626 | 回覆:54 | 感謝：1&nbsp;]
-		list($nums, $posts) = sscanf($info, "[&nbsp;查看:%d | 回覆:%d | 感謝：1&nbsp;]");
-		$data["posts"] = $posts;
+		//list($nums, $posts) = sscanf($info, "[&nbsp;查看 %d | 回覆 %d | 感謝 ]");
+		$data["posts"] = trim(strstr(@$info->find("span", 3)->plaintext, " "));
 		$data["pages"] = floor($data["posts"]/10)+1;
-		$data["nums"] = $nums;
+		$data["nums"] = trim(strstr(@$info->find("span", 1)->plaintext, " "));
 		
 		// class name type
 		//$info = $this->html->find("div[id^post_]",0);
@@ -358,7 +395,6 @@ class Novel extends Novel_plugin
 			//$this->html->load_file("http://ck101.com/forum.php?mod=threadlazydata&tid=".$data["novel_id"]);
 			//$idx = $this->parser_novel_content($idx);
 		}
-		
 		$this->current_novel_info = $data;
 		return $data;
 		
@@ -369,26 +405,7 @@ class Novel extends Novel_plugin
 	{
 		$url = "http://ck101.com/forum-237-$page.html";
 		$this->html->load_file($url);
-		$data = array();
-		foreach($this->html->find("*[id^=normalthread]") as $tbody){
-			$idx = count($data);
-			$th = $tbody->find("th",0);
-			$data[$idx]["class"] = trim($th->find("em",0)->plaintext);
-			//$data[$idx]["class"] = "";
-			$data[$idx]["name"] = trim($th->find("a",1)->plaintext);
-			$data[$idx]["page_url"]  = trim($th->find("a",1)->href);
-			$data[$idx]["posts"] = trim($tbody->find(".num a",0)->plaintext);
-			$data[$idx]["pages"] = floor($data[$idx]["posts"]/10)+1;
-			$data[$idx]["nums"]  = trim($tbody->find(".num em",0)->plaintext);
-			
-			$novel_page_info = $this->page_url_to_info($data[$idx]["page_url"]);
-			$data[$idx]["novel_id"] = $novel_page_info["novel_id"];
-			
-			if(strstr($data[$idx]["name"],"已完"))	$data[$idx]["type"] =1;
-			else	$data[$idx]["type"] =0;
-			if($data[$idx]["class"] == "[版務公告]")
-				array_pop($data);
-		}
+		$data = $this->ck101_parse_forum($this->html);
 		$this->current_novel_list = $data;
 		return $data;
 	}
@@ -432,6 +449,12 @@ class Novel extends Novel_plugin
 		$url[2] = "1";
 		$page_url = implode("-", $url);
 		return $page_url;
+	}
+
+	function test() {
+		$html = $this->html->load_file("test/forum.html");
+		$data = $this->ck101_parse_forum($html);
+		print_r($data);
 	}
 };
 //$aa = new Novel;

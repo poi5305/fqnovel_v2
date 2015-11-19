@@ -106,6 +106,9 @@ switch($type)
 		$novel->echo_novel($novel_id, $page_from, $page_end);
 		
 		break;
+	case "test":
+		$novel->test();
+		break;
 	default:
 		echo "Error! no such type\n";
 		break;
